@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+
+# Load dataset
+df = pd.read_csv("WordDifficulty.csv")
+df.columns = df.columns.str.strip()  # Clean column names
+
+# Make all words lowercase for matching
+df['Word'] = df['Word'].str.lower()
+
+# Create a dictionary mapping words to their reading time (complexity)
+complexity_dict = dict(zip(df['Word'], df['I_Mean_RT']))
+
+# Define a function to score sentence complexity
+def score_sentence(sentence):
+    words = sentence.lower().split()
+    total_score = 0
+    valid_words = 0
+    details = []
+
+    for word in words:
+        clean_word = ''.join(c for c in word if c.isalnum())
+        score = complexity_dict.get(clean_word, None)
+        if score:
+            total_score += score
+            valid_words += 1
+            details.append(f"{clean_word} (score: {round(score, 2)})")
+        else:
+            details.append(f"{clean_word} (not found)")
+
+    if valid_words == 0:
+        avg_score = "N/A"
+    else:
+        avg_score = round(total_score / valid_words, 2)
+
+    return avg_score, details
+
+# Test with a sentence
+user_input = "The quick brown fox jumps over the lazy dog"
+score, word_scores = score_sentence(user_input)
+
+print("📝 Input Sentence:", user_input)
+print("📊 Average Complexity Score:", score)
+print("🔍 Word Breakdown:")
+for detail in word_scores:
+    print(" -", detail)
